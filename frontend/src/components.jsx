@@ -1,11 +1,15 @@
 import { useEffect, useState } from "react";
 import { api } from "./api";
 
-export const money = n => `$${Number(n).toFixed(2)}`;
+export const money = n => `₹${Number(n).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 export const fmt = s => `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 const LABEL = { session_started: "Session started", add: "Added to cart", update: "Changed quantity", remove: "Removed from cart",
   login: "Signed in", register: "Account created", checkout: "Order placed" };
 const time = iso => new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+
+const ProductImage = ({ product, className = "" }) => product.image ? (
+  <img className={className} src={product.image} alt={product.name} />
+) : <span aria-hidden="true">{product.emoji}</span>;
 
 export function useCountdown(expiresAt) {
   const [now, setNow] = useState(Date.now());
@@ -17,7 +21,7 @@ export function Header({ q, setQ, user, expiresAt, count, onCart, onPanel, onLog
   const left = useCountdown(expiresAt);
   return (
     <header className="hdr"><div className="wrap">
-      <a className="logo" href="#/"><i />Parcel</a>
+      <a className="logo" href="#/"><i />Volt <small className="india-mark">INDIA</small></a>
       <input className="search" type="search" placeholder="Search products" value={q} onChange={e => setQ(e.target.value)} aria-label="Search products" />
       <button className="btn" onClick={onPanel}>Session {left > 0 ? fmt(left) : "expired"}</button>
       {user ? (<><span className="hi">Hi, {user.name.split(" ")[0]}</span><button className="btn" onClick={onLogout}>Sign out</button></>)
@@ -29,19 +33,17 @@ export function Header({ q, setQ, user, expiresAt, count, onCart, onPanel, onLog
 
 export function Hero({ user, expiresAt, onPanel }) {
   const left = useCountdown(expiresAt);
-  const pct = Math.min(100, (left / 1800) * 100);
   return (
     <section className="hero">
       <div>
-        <h1>Fill your cart. We’ll hold it for you.</h1>
-        <p>Your session stays open for 30 minutes after your last click. Sign in whenever you like and the cart you built as a guest comes with you.</p>
+        <span className="india-label">Made for India</span>
+        <h1>Upgrade your everyday tech.</h1>
+        <p>Discover genuine headphones, smart devices, gaming gear and everyday essentials. Prices include GST, with free delivery on orders above ₹2,999.</p>
       </div>
-      <aside className="ticket">
-        <span className="tlabel">Your session</span>
-        <div className="ring" style={{ "--p": pct }}><div><strong>{fmt(left)}</strong><small>left</small></div></div>
-        <p>{user ? `Signed in as ${user.name}` : "Browsing as a guest"}</p>
-        <button className="btn" onClick={onPanel}>See session activity</button>
-      </aside>
+      <button className="session-timer" onClick={onPanel} aria-label="Open session activity">
+        <span className="session-dot" />
+        <span><small>Session</small><strong>{fmt(left)}</strong></span>
+      </button>
     </section>
   );
 }
@@ -50,7 +52,7 @@ export function ProductCard({ p, onAdd, busy }) {
   return (
     <article className="card">
       <div className="art" style={{ "--h": p.hue }}>
-        <span aria-hidden="true">{p.emoji}</span>
+        <ProductImage product={p} />
         {p.stock <= 5 && <em className="tag low">Only {p.stock} left</em>}
       </div>
       <div className="info">
@@ -85,7 +87,7 @@ export function CartDrawer({ open, cart, onClose, setQty, remove, checkout, chec
             <ul className="lines">
               {cart.items.map(it => (
                 <li key={it.id}>
-                  <div className="thumb" style={{ "--h": it.hue }}>{it.emoji}</div>
+                  <div className="thumb" style={{ "--h": it.hue }}><ProductImage product={it} /></div>
                   <div className="lname">
                     <b>{it.name}</b>
                     <div className="step">
@@ -148,7 +150,7 @@ export function AuthPage({ mode, onSubmit }) {
   return (
     <div className="authpage">
       <aside className="authside">
-        <a className="logo light" href="#/"><i />Parcel</a>
+        <a className="logo light" href="#/"><i />Volt</a>
         <div>
           <h1>{signup ? "Create your account in a minute." : "Welcome back."}</h1>
           <ul>
@@ -157,7 +159,7 @@ export function AuthPage({ mode, onSubmit }) {
             <li>Stay signed in for 30 minutes after your last click.</li>
           </ul>
         </div>
-        <p className="fine">Free shipping on orders over $150.</p>
+        <p className="fine">Free delivery across India on orders over ₹2,999.</p>
       </aside>
 
       <main className="authmain">
@@ -166,7 +168,7 @@ export function AuthPage({ mode, onSubmit }) {
             <a href="#/login" className={!signup ? "on" : ""}>Sign in</a>
             <a href="#/signup" className={signup ? "on" : ""}>Create account</a>
           </nav>
-          <h2>{signup ? "Sign up" : "Sign in to Parcel"}</h2>
+          <h2>{signup ? "Sign up" : "Sign in to Volt"}</h2>
           <form onSubmit={submit} noValidate={false}>
             {signup && <label>Full name<input value={f.name} onChange={set("name")} autoComplete="name" required /></label>}
             <label>Email address<input type="email" value={f.email} onChange={set("email")} autoComplete="email" required /></label>
@@ -193,7 +195,7 @@ export function AuthPage({ mode, onSubmit }) {
             <button className="btn blue big" disabled={busy}>{busy ? "Please wait" : signup ? "Create account" : "Sign in"}</button>
           </form>
           <p className="switch">
-            {signup ? <>Already have an account? <a href="#/login">Sign in</a></> : <>New to Parcel? <a href="#/signup">Create an account</a></>}
+            {signup ? <>Already have an account? <a href="#/login">Sign in</a></> : <>New to Volt? <a href="#/signup">Create an account</a></>}
           </p>
           <a className="guest" href="#/">Continue shopping as a guest</a>
         </div>
@@ -212,8 +214,8 @@ export function SessionPanel({ open, onClose, user, expiresAt }) {
   }, [open]);
   if (!open) return null;
   return (
-    <div className="modalwrap" onClick={onClose}>
-      <div className="modal wide" onClick={e => e.stopPropagation()}>
+    <div className="activity-overlay" onClick={onClose}>
+      <div className="activity-window" onClick={e => e.stopPropagation()}>
         <div className="dhead"><h2>Session activity</h2><button className="x" onClick={onClose} aria-label="Close">✕</button></div>
         <p className="mute">{user ? `Signed in as ${user.email}.` : "You’re browsing as a guest."} Your session expires in {fmt(left)} unless you keep shopping.</p>
         <h3>Recent actions</h3>

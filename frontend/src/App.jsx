@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { api, clearToken, ensureSession, onTTL, setSessionToken } from "./api";
 import { AuthPage, CartDrawer, DoneModal, Header, Hero, ProductCard, SessionPanel, Toasts } from "./components";
 
-const EMPTY = { items: [], count: 0, subtotal: 0, shipping: 0, total: 0, free_at: 150 };
+const EMPTY = { items: [], count: 0, subtotal: 0, shipping: 0, total: 0, free_at: 2999 };
 const go = hash => { window.location.hash = hash; window.scrollTo(0, 0); };
 
 export default function App() {

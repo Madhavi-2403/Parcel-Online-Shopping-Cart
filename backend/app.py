@@ -1,4 +1,4 @@
-"""Parcel API.
+"""Volt Electronics API.
 MongoDB   -> products, users, carts, orders
 Cassandra -> sessions (sliding TTL) and per-session activity log
 """
@@ -13,7 +13,7 @@ from pymongo import MongoClient
 from werkzeug.security import check_password_hash, generate_password_hash
 
 SESSION_TTL = int(os.getenv("SESSION_TTL", 1800))  # seconds, renewed on every request
-FREE_SHIPPING_AT, SHIPPING_FEE = 150.0, 9.99
+FREE_SHIPPING_AT, SHIPPING_FEE = 2999.0, 99.0
 
 app = Flask(__name__)
 db = MongoClient(os.getenv("MONGO_URI", "mongodb://mongo:27017"))["shop"]
@@ -85,32 +85,37 @@ def payload(s, token=None):
 
 # ---------- Mongo seed ----------
 SEED = [
-    ("Aurora Wireless Headphones", "Electronics", 129.99, "🎧", 265, 4.7, 25, "Noise cancelling, 40 hour battery."),
-    ("Pulse Smartwatch", "Electronics", 199.00, "⌚", 190, 4.5, 14, "Heart rate, GPS and a week of battery."),
-    ("Nimbus Mechanical Keyboard", "Electronics", 89.50, "⌨️", 215, 4.8, 30, "Hot swappable switches, quiet typing."),
-    ("Vertex Gaming Mouse", "Electronics", 64.00, "🖱️", 330, 4.4, 40, "26k DPI sensor, 60 g shell."),
-    ("Lumen Desk Lamp", "Home", 45.00, "💡", 48, 4.6, 18, "Warm to cool light, touch dimmer."),
-    ("Terra Ceramic Mug Set", "Home", 32.00, "☕", 25, 4.9, 60, "Four hand glazed 350 ml mugs."),
-    ("Zen Aroma Diffuser", "Home", 39.90, "🪴", 150, 4.3, 3, "Ultrasonic mist with a wood grain base."),
-    ("Stride Running Shoes", "Fashion", 109.00, "👟", 12, 4.6, 22, "Lightweight foam, breathable knit."),
-    ("Voyager Backpack", "Fashion", 74.99, "🎒", 35, 4.7, 16, "28 L, water resistant, laptop sleeve."),
-    ("Solar Sunglasses", "Fashion", 59.00, "🕶️", 55, 4.2, 28, "Polarised lenses, titanium frame."),
-    ("Peak Yoga Mat", "Sports", 35.00, "🧘", 140, 4.5, 50, "6 mm cushioning with a grippy surface."),
-    ("Orbit Smart Water Bottle", "Sports", 27.50, "🧴", 200, 4.1, 5, "Tracks intake and glows to remind you."),
+    ("Aurora Wireless Headphones", "Audio", 12999.00, "🎧", 265, 4.7, 25, "Adaptive noise cancelling and 40-hour battery life.", "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=800&q=85"),
+    ("Pulse Smartwatch", "Wearables", 8999.00, "⌚", 190, 4.5, 14, "Advanced health tracking, GPS and seven-day battery.", "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=85"),
+    ("Nimbus Mechanical Keyboard", "Computing", 6499.00, "⌨️", 215, 4.8, 30, "Hot-swappable switches and smooth wireless typing.", "https://images.unsplash.com/photo-1587829741301-dc798b83add3?auto=format&fit=crop&w=800&q=85"),
+    ("Vertex Gaming Mouse", "Computing", 3999.00, "🖱️", 330, 4.4, 40, "26K DPI sensor in an ultra-light 60 g shell.", "https://images.unsplash.com/photo-1527814050087-3793815479db?auto=format&fit=crop&w=800&q=85"),
+    ("Nova 4K Monitor", "Computing", 24999.00, "🖥️", 205, 4.8, 12, "27-inch IPS display with 144 Hz refresh rate.", "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?auto=format&fit=crop&w=800&q=85"),
+    ("Pocket Cinema Projector", "Entertainment", 19999.00, "📽️", 48, 4.3, 9, "1080p portable projector with automatic focus.", "https://images.unsplash.com/photo-1574269909862-7e1d70bb8078?auto=format&fit=crop&w=800&q=85"),
+    ("Echo Home Speaker", "Audio", 7999.00, "🔊", 185, 4.6, 20, "Room-filling spatial audio with a voice assistant.", "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?auto=format&fit=crop&w=800&q=85"),
+    ("Aero True Wireless Earbuds", "Audio", 3999.00, "🎧", 225, 4.5, 35, "Compact ANC earbuds with a 30-hour charging case.", "https://images.unsplash.com/photo-1606220945770-b5b6c2c55bf1?auto=format&fit=crop&w=800&q=85"),
+    ("Snap Action Camera", "Photography", 29999.00, "📷", 25, 4.7, 16, "4K stabilization camera with waterproof housing.", "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=800&q=85"),
+    ("Orbit Drone Mini", "Photography", 49999.00, "🚁", 345, 4.4, 8, "4K camera drone with obstacle sensing and 28-minute flight.", "https://images.unsplash.com/photo-1507582020474-9d02b4ebbbd4?auto=format&fit=crop&w=800&q=85"),
+    ("Arc Fast Charger", "Accessories", 1999.00, "🔌", 155, 4.6, 50, "Compact 65 W GaN charger for phones and laptops.", "https://images.unsplash.com/photo-1583863788434-e58a36330cf0?auto=format&fit=crop&w=800&q=85"),
+    ("Flux Power Bank", "Accessories", 2499.00, "🔋", 125, 4.7, 42, "20,000 mAh portable battery with 30 W fast charging.", "https://images.unsplash.com/photo-1609091839311-d5365f9ff1c5?auto=format&fit=crop&w=800&q=85"),
 ]
 
 def seed():
     db.products.create_index("name", unique=True)
-    for n, c, p, e, h, r, s, d in SEED:
-        db.products.update_one({"name": n}, {"$setOnInsert": dict(
-            name=n, category=c, price=p, emoji=e, hue=h, rating=r, stock=s, description=d)}, upsert=True)
+    db.products.delete_many({"name": {"$nin": [p[0] for p in SEED]}})
+    for product in SEED:
+        n, c, p, e, h, r, s, d = product[:8]
+        image = product[8] if len(product) == 9 else None
+        db.products.update_one({"name": n}, {"$set": dict(
+            name=n, category=c, price=p, emoji=e, hue=h, rating=r, stock=s, description=d, image=image)}, upsert=True)
     db.users.create_index("email", unique=True)
     db.carts.create_index("owner", unique=True)
 
 seed()
 
 def pub(p):
-    return {"id": str(p["_id"]), **{k: p[k] for k in ("name", "category", "price", "emoji", "hue", "rating", "stock", "description")}}
+    data = {"id": str(p["_id"]), **{k: p[k] for k in ("name", "category", "price", "emoji", "hue", "rating", "stock", "description")}}
+    data["image"] = p.get("image")
+    return data
 
 def get_product(pid):
     try:
@@ -132,7 +137,7 @@ def cart_view(owner):
         if not p:
             continue
         qty = min(i["qty"], p["stock"])
-        items.append({"id": i["product_id"], "name": p["name"], "emoji": p["emoji"], "hue": p["hue"],
+        items.append({"id": i["product_id"], "name": p["name"], "emoji": p["emoji"], "image": p.get("image"), "hue": p["hue"],
                       "price": p["price"], "qty": qty, "stock": p["stock"]})
         subtotal += p["price"] * qty
     shipping = 0.0 if (subtotal >= FREE_SHIPPING_AT or not items) else SHIPPING_FEE
@@ -286,7 +291,7 @@ def checkout():
     oid = db.orders.insert_one({"user_id": g.s["user_id"], "items": view["items"], "subtotal": view["subtotal"],
                                 "shipping": view["shipping"], "total": view["total"], "created_at": dt.datetime.utcnow()}).inserted_id
     db.carts.delete_one({"owner": g.owner})
-    log(g.owner, "checkout", f"${view['total']:.2f}")
+    log(g.owner, "checkout", f"₹{view['total']:,.2f}")
     return jsonify(order_id=str(oid)[-8:].upper(), total=view["total"])
 
 @app.get("/api/orders")

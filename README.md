@@ -1,4 +1,4 @@
-# Parcel: shopping cart with session management
+# Volt Electronics: shopping cart with session management
 
 Stack: Flask (API), React + Vite (UI), MongoDB (products, users, carts, orders), Cassandra (sessions and activity log), Docker Compose.
 
